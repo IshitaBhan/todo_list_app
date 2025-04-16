@@ -1,35 +1,45 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: todo-app
+  name: kubeapp-dev-deployment
+  namespace: kubeapp-dev
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
-      app: todo-app
+      app: kubeapp
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 25%
   template:
     metadata:
       labels:
-        app: todo-app
+        app: kubeapp
     spec:
       containers:
-      - name: todo-app-container
-        image: gcr.io/<PROJECT_ID>/todo-app:v1 # Replace <PROJECT_ID> with your GCP project ID.
-        ports:
-        - containerPort: 8080
-        env:
-        - name: APP_ENVIRONMENT
-          valueFrom:
-            configMapKeyRef:
-              name: todo-app-config
-              key: APP_ENVIRONMENT
-        - name: APP_DEBUG
-          valueFrom:
-            configMapKeyRef:
-              name: todo-app-config
-              key: APP_DEBUG
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: todo-app-secret
-              key: DB_PASSWORD
+        - name: kubeapp-container
+          image: vedantmatanhelia/kubeapp:dev
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: "/health"
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 1
+          envFrom:
+            - configMapRef:
+                name: kubeapp-config
+            - secretRef:
+                name: kubeapp-secrets
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
