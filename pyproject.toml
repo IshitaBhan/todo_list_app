@@ -1,0 +1,11 @@
+[project]
+name = "kubeapp"
+version = "1.0.0"
+description = "A simple python backend for kubernetes"
+requires-python = ">=3.9"
+
+[tool.poetry]
+package-mode = false
+[tool.poetry.dependencies]
+fastapi = {extras = ["standard"], version = "^0.115.12"}
+uvicorn = "^0.34.1"
